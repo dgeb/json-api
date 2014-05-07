@@ -1006,7 +1006,7 @@ Servers **MAY** use other HTTP error codes to represent errors.  Clients
 **MUST** interpret those errors in accordance with HTTP semantics.
 
 
-## PATCH Support (Optional)
+## PATCH Support
 
 JSON API servers **MAY** opt to support HTTP `PATCH` requests that conform to the JSON Patch format [[RFC6902](http://tools.ietf.org/html/rfc6902)]. There are JSON Patch equivalant operations for the operations described above that use `POST`, `PUT` and `DELETE`. From here on, JSON Patch operations sent in a `PATCH` request will be referred to simply as "`PATCH` operations".
 
