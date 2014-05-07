@@ -517,7 +517,7 @@ The request document structure varies according to the request method and is cov
 
 The URL for a collection of resources **SHOULD** be formed from the plural form of the resource **type**.
 
-For example, a collection of photos should be accessible at:
+For example, a collection of photos will have the URL:
 
 ```text
 /photos
@@ -525,7 +525,7 @@ For example, a collection of photos should be accessible at:
 
 The URL for an individual resource **SHOULD** be formed by appending the resource's ID to the collection URL.
 
-For example, the photo with an `id` of `1` should be accessible at:
+For example, a photo with an `id` of `1` will have the URL:
 
 ```text
 /photos/1
@@ -533,7 +533,7 @@ For example, the photo with an `id` of `1` should be accessible at:
 
 The URL for multiple individual resources **SHOULD** be formed by appending a comma-separated list of resource IDs to the collection URL.
 
-For example, the photos with `id`s of `1` or `2` or `3` should be accessible at:
+For example, the photos with `id`s of `1` or `2` or `3` will collectively have the URL:
 
 ```text
 /photos/1,2,3
@@ -545,15 +545,15 @@ Alternative URLs for resources **MAY** optionally be specified in responses with
 
 ### Relationship URLs
 
-A resource's relationship **MAY** be accessible at a URL formed by appending `links/<relationship-name>` to the resource's URL. This relative path is consistent with the internal structure of a resource document.
+A resource's relationship **MAY** be accessible at a URL formed by appending `/links/<relationship-name>` to the resource's URL. This relative path is consistent with the internal structure of a resource document.
 
-For example, a photo's collection of linked comments should be accessible at:
+For example, a photo's collection of linked comments will have the URL:
 
 ```text
 /photos/1/links/comments
 ```
 
-A photo's reference to an individual linked photographer should be accessible at:
+A photo's reference to an individual linked photographer will have the URL:
 
 ```text
 /photos/1/links/photographer
