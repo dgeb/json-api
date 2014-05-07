@@ -847,12 +847,12 @@ Accept: application/vnd.api+json
 
 #### Updating Multiple Resources
 
-To update multiple resources, send a `PUT` request to the URL that represents the collection of resources. The request **MUST** include a collection of resource documents that each contain an `"id"`.
+To update multiple resources, send a `PUT` request to the URL that represents the multiple individual resources (NOT the entire collection of resources). The request **MUST** include a collection of resource documents that each contain an `"id"`.
 
 For example:
 
 ```text
-PUT /articles
+PUT /articles/1,2
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
