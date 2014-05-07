@@ -284,7 +284,7 @@ A server that provides a to-many relationship as a URL (via `"href"`) **MUST** r
 
 ### Response Documents <a href="#response-documents" id="response-documents" class="headerlink">¶</a>
 
-The top-level of a response document **SHOULD** contain a collection of primary documents. This collection **SHOULD** be keyed either by the plural form of the resource type or the generic key `"data"`. 
+The top-level of a response document **SHOULD** contain a collection of primary documents. This collection **SHOULD** be keyed either by the resource type or the generic key `"data"`.
 
 A single primary document **SHOULD** be represented as a member of an array:
 
@@ -515,7 +515,7 @@ The request document structure varies according to the request method and is cov
 
 ## URLs
 
-The URL for a collection of resources **SHOULD** be formed from the plural form of the resource **type**.
+The URL for a collection of resources **SHOULD** be formed from the resource type.
 
 For example, a collection of photos will have the URL:
 
