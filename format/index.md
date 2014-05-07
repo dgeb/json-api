@@ -297,7 +297,7 @@ A single primary document **SHOULD** be represented as a member of an array:
 }
 ```
 
-Multiple primary documents **SHOULD** also be represented as an array:
+Multiple primary documents **SHOULD** also be represented as members of an array:
 
 ```javascript
 {
