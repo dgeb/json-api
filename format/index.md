@@ -21,32 +21,129 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Document Structure <a href="#document-structure" id="document-structure" class="headerlink">¶</a>
 
-Different JSON documents are referenced throughout this specification:
+The top level of a JSON API document **SHOULD** contain a representation of the primary resource(s). The primary resource, or collection of resources, **SHOULD** be keyed either by the resource type or the generic key `"data"`.
 
-* "Resource documents" are JSON representations of resources and their associations. "Primary documents" represent the primary resource(s) specified by a request, while "linked documents" represent resources associated with the primary resource(s).
+The top level of a document **MAY** also have the following keys:
 
-* "Link documents" are JSON representations of links between resources.
+* `"meta"`: meta-information about a resource, such as pagination.
+* `"links"`: URL templates to be used for expanding resources' relationships
+  URLs.
+* `"linked"`: a collection of resource objects, grouped by type, that are linked to
+  the primary resource(s) and/or each other.
 
-* The "response document" is the entire JSON document returned as the body of a response.
+No other keys should be present at the top level of the document.
 
-* The "request document" is the entire JSON document sent as the body of a request.
+### Resource Representations
 
-### Resource Documents <a href="#resource-documents" id="resource-documents" class="headerlink">¶</a>
+This section describes how resources are described throughout a JSON API document. It applies to primary resources, represented at the top level of the document, as well as linked resources.
 
-Resource documents have the same internal structure, regardless of whether they represent primary or linked resources and whether they are contained in request or response documents. Some attributes are only applicable for particular contexts, as explained below. 
+#### Singular Resources
 
-Here's how a "post" resource might appear in a response document:
+A singular resource **SHOULD** be represented as a single "resource object" (described below) or string value.
+
+The following post is represented as a resource object:
+
+```javascript
+{
+  "posts": {
+    "id": "1",
+    // ... attributes of this post
+  }
+}
+```
+
+This post is represented simply by its ID:
+
+```javascript
+{
+  "posts": "1"
+}
+```
+
+#### Plural Resources
+
+A collection of resources **SHOULD** be represented as an array of resource objects or string values, or as a "collection object" (described below).
+
+The following posts are represented as an array of resource objects:
 
 ```javascript
 {
   "posts": [{
-    "id": "1",
-    "title": "Rails is Omakase"
+    "id": "1"
+    // ... attributes of this post
+  }, {
+    "id": "2"
+    // ... attributes of this post
   }]
 }
 ```
 
-In the example above, the resource document is simply:
+These posts are represented as an array of IDs:
+
+```javascript
+{
+  "posts": ["1", "2"]
+}
+```
+
+These comments are represented by a single "collection" object:
+
+```javascript
+{
+  "comments": {
+    "href": "http://example.com/comments/5,12,17,20",
+    "ids": [ "5", "12", "17", "20" ],
+    "type": "comments"
+  }
+}
+```
+
+#### Variable Type Resources
+
+Variable type (i.e. "heterogenous") resources can not be keyed by type, but the type **MUST** still be specified in an alternative manner.
+
+Primary heterogenous resources **MUST** be keyed by `"data"` at the top level of a document.
+
+When variable type resources are represented as objects, the `"type"` key must be specified for each resource:
+
+```javascript
+{
+  "data": [{
+    "id": "9",
+    "type": "people",
+    "name": "@tenderlove"
+  }, {
+    "id": "1",
+    "type": "cats",
+    "name": "@gorbypuff"
+  }]
+}
+```
+
+Variable type resources **MAY** be represented as string values that include both the type and id in the format `"type:id"`:
+
+```javascript
+{
+  "data": ["people:9", "cats:1"]
+}
+```
+
+### Resource Objects
+
+Resource objects have the same internal structure, regardless of whether they represent primary or linked resources.
+
+Here's how a "post" resource might appear in a document:
+
+```javascript
+{
+  "posts": {
+    "id": "1",
+    "title": "Rails is Omakase"
+  }
+}
+```
+
+In the example above, the resource object is simply:
 
 ```javascript
 //...
@@ -57,23 +154,23 @@ In the example above, the resource document is simply:
 //...
 ```
 
-This section will focus exclusively on resource documents, outside of the context of request and response documents.
+This section will focus exclusively on resource objects, outside of the context of the full JSON API document.
 
-#### Resource Attributes <a href="#resource-document-attributes" id="resource-document-attributes" class="headerlink">¶</a>
+#### Resource Attributes <a href="#resource-object-attributes" id="resource-object-attributes" class="headerlink">¶</a>
 
-There are four reserved keys in resource documents:
+There are four reserved keys in resource objects:
 
 * `"id"`
 * `"type"`
 * `"href"`
 * `"links"`
 
-Every other key in a resource document represents an "attribute". An attribute's value may
+Every other key in a resource object represents an "attribute". An attribute's value may
 be any JSON value.
 
-#### Resource IDs <a href="#resource-document-ids" id="resource-document-ids" class="headerlink">¶</a>
+#### Resource IDs <a href="#resource-object-ids" id="resource-object-ids" class="headerlink">¶</a>
 
-Each resource document **SHOULD** contain an `"id"` key.
+Each resource object **SHOULD** contain an `"id"` key.
 
 The `"id"` key in a document represents a unique identifier for the underlying
 resource, scoped to its type. It **MUST** be a string which **SHOULD** only
@@ -93,13 +190,13 @@ opaque to solely provide a unique identity within some type.
 
 #### Resource Types
 
-The type of each resource document can usually be determined from the context of the response or request in which it is contained.
+The type of each resource object can usually be determined from the context in which it is contained. As discussed above, resource objects are typically keyed by their type in a document. 
 
-Each resource document **MAY** contain a `"type"` key that designates its type. 
+Each resource document **MAY** contain a `"type"` key to explicitly designate its type. 
 
-The `"type"` key is **REQUIRED** when the type of a resource can not be specified or inferred otherwise.
+The `"type"` key is **REQUIRED** when the type of a resource is not otherwise specified in a document.
 
-For example, here's an array of resource documents that might be part of a has-many polymorphic relationship:
+For example, here's an array of resource objects that might be part of a has-many polymorphic relationship:
 
 ```javascript
 //...
@@ -115,9 +212,9 @@ For example, here's an array of resource documents that might be part of a has-m
 //...
 ```
 
-#### Resource URLs (Responses Only)
+#### Resource URLs
 
-The URL of each resource in a response document may be specified with the `"href"` key.
+The URL of each resource in **MAY** be specified with the `"href"` key. These URLs **SHOULD** only be specified by the server, and therefore are typically only included in request documents.
 
 ```javascript
 //...
@@ -133,11 +230,11 @@ The URL of each resource in a response document may be specified with the `"href
 //...
 ```
 
-A server **MUST** respond to a `GET` request to the specified URL with a response that includes the resource represented as a single primary document.
+A server **MUST** respond to a `GET` request to the specified URL with a response that includes the resource.
 
 It is generally more efficient to specify URL templates at the root level of a response document rather than to specify individual URLs per resource.
 
-#### Resource Relationships <a href="#resource-document-relationships" id="resource-document-relationships" class="headerlink">¶</a>
+#### Resource Relationships <a href="#resource-object-relationships" id="resource-object-relationships" class="headerlink">¶</a>
 
 The value of the `"links"` key is a JSON object that represents linked resources, keyed by the name of each association.
 
@@ -156,11 +253,9 @@ For example, the following post is associated with a single `author` and a colle
 //...
 ```
 
-The allowed values for each "link" depend upon whether it represents a to-one or to-many relationship, as discussed below.
+##### To-One Relationships
 
-##### To-One Relationships <a href="#resource-document-relationships-to-one-relationships" id="resource-document-relationships-to-one-relationships" class="headerlink">¶</a>
-
-A to-one relationship **MAY** be represented as a string value that corresponds to the ID of a linked resource.
+To-one relationships **MUST** be represented as singular resources with one of the valid formats described above.
 
 For example, the following post is associated with a single author:
 
@@ -176,9 +271,7 @@ For example, the following post is associated with a single author:
 //...
 ```
 
-A to-one relationship **MAY** alternatively be represented with a "to-one link document" (see below).
-
-For example, the link document below provides details about the linked author:
+And here's an example of a linked author represented as a resource object:
 
 ```javascript
 //...
@@ -196,9 +289,9 @@ For example, the link document below provides details about the linked author:
 //...
 ```
 
-##### To-Many Relationships <a href="#resource-document-relationships-to-many-relationships" id="resource-document-relationships-to-many-relationships" class="headerlink">¶</a>
+##### To-Many Relationships
 
-A to-many relationship **MAY** be represented as an array of strings corresponding to IDs of linked resources.
+To-many relationships **MUST** be represented as plural resources with one of the valid formats described above.
 
 For example, the following post is associated with several comments:
 
@@ -214,9 +307,7 @@ For example, the following post is associated with several comments:
 //...
 ```
 
-A to-many relationship **MAY** alternatively be represented with a "to-many link document" (see below).
-
-For example, the link document below provides details about the linked comments:
+And here's an example of an array of comments linked as a collection object:
 
 ```javascript
 //...
@@ -234,110 +325,18 @@ For example, the link document below provides details about the linked comments:
 //...
 ```
 
-As another alternative, a to-many relationship **MAY** be represented as an array of "to-one link documents" (see below). Given its verbosity, this format should be used sparingly, but is helpful when linked resources may vary in `"type"`.
+### Collection Objects
 
-```javascript
-//...
-  {
-    "id": "1",
-    "title": "One Type Purr Author",
-    "links": {
-      "authors": [{
-        "href": "http://example.com/people/9",
-        "id": "9",
-        "type": "people"
-      },
-      {
-        "href": "http://example.com/cats/1",
-        "id": "1",
-        "type": "cats"
-      }]
-    }
-  }
-//...
-```
+A "collection object" contains one or more of the attributes: 
 
-### Link Documents
-
-Link documents **MAY** be used within a resource document's `links` key to represent to-one or to-many relationships.
-
-#### To-One Link Documents
-
-A "to-one link document" contains one or more of the attributes: 
-
-* `"id"` - the ID of the linked resource.
+* `"ids"` - an array of IDs for the referenced resources.
 * `"type"` - the resource **type**.
-* `"href"` - the URL of the linked resource (only applicable to response documents).
+* `"href"` - the URL of the referenced resources (only applicable to response documents). 
 
-A server that provides a to-one relationship as a URL (via `"href"`) **MUST** respond to a `GET` request to the specified URL with a response that includes the resource represented as a single primary document.
-
-#### To-Many Link Documents
-
-A "to-many link document" contains one or more of the attributes: 
-
-* `"ids"` - an array of IDs for the linked resources.
-* `"type"` - the resource **type**.
-* `"href"` - the URL of the linked resources (only applicable to response documents). 
-
-A server that provides a to-many relationship as a URL (via `"href"`) **MUST** respond to a `GET` request to the specified URL with a response that includes the resource represented as a collection of primary documents.
+A server that provides a collection object that contains an `"href"` **MUST** respond to a `GET` request to the specified URL with a response that includes the referenced objects as a collection of resource objects.
 
 
-### Response Documents <a href="#response-documents" id="response-documents" class="headerlink">¶</a>
-
-The top-level of a response document **SHOULD** contain a single primary document or a collection of primary documents, keyed either by the resource type or the generic key `"data"`.
-
-A single primary document **SHOULD** be represented as a single object:
-
-```javascript
-{
-  "posts": {
-    "id": "1"
-    // an individual post document
-  }
-}
-```
-
-A collection of primary documents **SHOULD** be represented as members of an array:
-
-```javascript
-{
-  "posts": [{
-    "id": 1
-    // an individual post document
-  }, {
-    "id": 2
-    // an individual post document
-  }]
-}
-```
-
-Heterogenous collections **MUST** be keyed by `"data"`. Any collection keyed by `"data"` instead of by its type **MUST** specify `"type"` for each contained resource.
-
-```javascript
-{
-  "data": [{
-    "id": "9",
-    "type": "people",
-    "name": "@tenderlove"
-  }, {
-    "id": "1",
-    "type": "cats",
-    "name": "@gorbypuff"
-  }]
-}
-```
-
-The top-level of a response document **MAY** also have the following keys:
-
-* `"meta"`: meta-information about a resource, such as pagination.
-* `"links"`: URL templates to be used for expanding resources' relationships
-  URLs.
-* `"linked"`: a collection of resource documents, grouped by type, that are linked to
-  the primary document(s) and/or each other.
-
-No other keys should be present at the top level of the response document.
-
-#### URL Templates <a href="#response-documents-url-templates" id="response-documents-url-templates" class="headerlink">¶</a>
+### URL Templates
 
 A top-level `"links"` object **MAY** be used to specify URL templates that can be used to formulate URLs for resources according to their type.
 
@@ -434,7 +433,7 @@ requiring that clients hard-code information about how to form the URLs.
 NOTE: In case of conflict, an individual document's `links` object will take
 precedence over a top-level `links` object.
 
-#### Compound Documents <a href="#response-documents-compound-documents" id="response-documents-compound-documents" class="headerlink">¶</a>
+### Compound Documents
 
 To save HTTP requests, responses may optionally allow for the inclusion of linked documents along with the requested primary documents. Such response documents are called "compound documents".
 
@@ -509,9 +508,6 @@ multiple times (in this example, the author of the three posts). Along these
 lines, if a primary document is linked to another primary or linked document,
 it should not be duplicated within the `"linked"` object.
 
-### Request Documents <a href="#request-documents" id="request-documents" class="headerlink">¶</a>
-
-The request document structure varies according to the request method and is covered in detail below.
 
 ## URLs
 
@@ -561,9 +557,9 @@ A photo's reference to an individual linked photographer will have the URL:
 
 Note that these URLs represent the **relationship** and not the linked resource. 
 
-A server **MUST** represent "to-one" relationships as an ID or a "to-one link document".
+A server **MUST** represent "to-one" relationships as singular resources.
 
-"To-many" relationships **MUST** be represented as an array of IDs, a single "to-many link document" or an array of "to-one link documents".
+"To-many" relationships **MUST** be represented as plural resources.
 
 
 ## Fetching Resources <a href="#fetching" id="fetching" class="headerlink">¶</a>
@@ -715,9 +711,9 @@ A server that supports creating resources **MUST** support creating individual r
 One or more resources can be *created* by making a `POST` request to the URL that
 represents a collection of resources to which the new resource should belong.
 
-#### Creating an Individual Resource <a href="#creating-a-resource" id="creating-a-resource" class="headerlink">¶</a>
+#### Creating an Individual Resource
 
-To create an individual resource, its document **MUST** be sent as the request document.
+To create an individual resource, a resource object **MUST** be sent as the primary document.
 
 For instance, a new photo might be created with the following request:
 
@@ -734,9 +730,9 @@ Accept: application/vnd.api+json
 }
 ```
 
-#### Creating Multiple Resources <a href="#creating-multiple-resources" id="creating-multiple-resources" class="headerlink">¶</a>
+#### Creating Multiple Resources
 
-To create multiple resources, an array of primary documents **MUST** be sent as the request document.
+To create multiple resources, an array of resource objects **MUST** be sent as the primary document.
 
 For instance, multiple photos might be created with the following request:
 
@@ -756,7 +752,7 @@ Accept: application/vnd.api+json
 }
 ```
 
-#### Client-Side IDs <a href="#updating-creating-a-document-client-side-ids" id="updating-creating-a-document-client-side-ids" class="headerlink">¶</a>
+#### Client-Side IDs
 
 A server **MAY** require a client to provide IDs generated on the
 client. If a server wants to request client-generated IDs, it **MUST**
@@ -800,9 +796,9 @@ Accept: application/vnd.api+json
 }
 ```
 
-#### Response <a href="#updating-creating-a-document-response" id="updating-creating-a-document-response" class="headerlink">¶</a>
+#### Response
 
-A server **MUST** respond to a successful document creation request
+A server **MUST** respond to a successful resource creation request
 according to [`HTTP semantics`](http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-22#section-6.3)
 
 The response **MUST** include a `Location` header identifying the location of the primary resource created by the request. If more than one resource is created, the `Location` URL must locate all created resources.
@@ -923,7 +919,7 @@ In order to remove a to-one relationship, specify `null` as the value of the rel
 
 Alternatively, a to-one relationship **MAY** optionally be accessible at its relationship URL (see above).
 
-A to-one relationship **MAY** be added by sending a `POST` request to the URL of the relationship. The key should match the name of the relationship and the value should either be an ID or a "to-one link document" (see above). For example:
+A to-one relationship **MAY** be added by sending a `POST` request with a singular primary resource representation to the URL of the relationship. For example:
 
 ```text
 POST /articles/1/links/author
@@ -974,7 +970,7 @@ individually.
 
 To facilitate fine-grained access, a to-many relationship **MAY** optionally be accessible at its relationship URL (see above).
 
-A to-many relationship **MAY** be added by sending a `POST` request to the URL of the relationship. The key should match the name of the relationship and the value should either be an array of IDs, a single "to-many link document", or an array of "to-one link documents". For example:
+A to-many relationship **MAY** be added by sending a `POST` request with a plural primary resource representation to the URL of the relationship. For example:
 
 ```text
 POST /articles/1/links/comments
@@ -999,6 +995,10 @@ DELETE /articles/1/links/comments/1,2
 ```
 
 When deleting heterogenous relationships, it is necessary to represent the **type** of the linked resource along with its ID. This **SHOULD** be done by representing the ID as `<type>:<ID>`.
+
+```text
+DELETE /articles/1/links/things/tags:1
+```
 
 ## Deleting Resources
 
