@@ -284,20 +284,20 @@ A server that provides a to-many relationship as a URL (via `"href"`) **MUST** r
 
 ### Response Documents <a href="#response-documents" id="response-documents" class="headerlink">¶</a>
 
-The top-level of a response document **SHOULD** contain a collection of primary documents. This collection **SHOULD** be keyed either by the resource type or the generic key `"data"`.
+The top-level of a response document **SHOULD** contain a single primary document or a collection of primary documents, keyed either by the resource type or the generic key `"data"`.
 
-A single primary document **SHOULD** be represented as a member of an array:
+A single primary document **SHOULD** be represented as a single object:
 
 ```javascript
 {
-  "posts": [{
-    "id": 1
+  "posts": {
+    "id": "1"
     // an individual post document
-  }]
+  }
 }
 ```
 
-Multiple primary documents **SHOULD** also be represented as members of an array:
+A collection of primary documents **SHOULD** be represented as members of an array:
 
 ```javascript
 {
@@ -727,8 +727,10 @@ Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
 {
-  "title": "Ember Hamster",
-  "src": "http://example.com/images/productivity.png"
+  "photos": {
+    "title": "Ember Hamster",
+    "src": "http://example.com/images/productivity.png"
+  }
 }
 ```
 
@@ -743,13 +745,15 @@ POST /photos
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
-[{
-  "title": "Ember Hamster",
-  "src": "http://example.com/images/productivity.png"
-}, {
-  "title": "Mustaches on a Stick",
-  "src": "http://example.com/images/mustaches.png"
-}]
+{
+  "photos": [{
+    "title": "Ember Hamster",
+    "src": "http://example.com/images/productivity.png"
+  }, {
+    "title": "Mustaches on a Stick",
+    "src": "http://example.com/images/mustaches.png"
+  }]
+}
 ```
 
 #### Client-Side IDs <a href="#updating-creating-a-document-client-side-ids" id="updating-creating-a-document-client-side-ids" class="headerlink">¶</a>
@@ -788,9 +792,11 @@ Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
 {
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "title": "Ember Hamster",
-  "src": "http://example.com/images/productivity.png"
+  "photos": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "Ember Hamster",
+    "src": "http://example.com/images/productivity.png"
+  }
 }
 ```
 
@@ -809,12 +815,12 @@ Location: http://example.com/photos/550e8400-e29b-41d4-a716-446655440000
 Content-Type: application/vnd.api+json
 
 {
-  "photos": [{
+  "photos": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "href": "http://example.com/photos/550e8400-e29b-41d4-a716-446655440000",
     "title": "Ember Hamster",
     "src": "http://example.com/images/productivity.png"
-  }]
+  }
 }
 ```
 
@@ -841,7 +847,10 @@ Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
 {
-  "title": "To TDD or Not"
+  "articles": {
+    "id": "1",
+    "title": "To TDD or Not"
+  }
 }
 ```
 
@@ -856,13 +865,15 @@ PUT /articles/1,2
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
-[{
-  "id": "1",
-  "title": "To TDD or Not"
-}, {
-  "id": "2",
-  "title": "LOL Engineering"
-}]
+{
+  "articles": [{
+    "id": "1",
+    "title": "To TDD or Not"
+  }, {
+    "id": "2",
+    "title": "LOL Engineering"
+  }]
+}
 ```
 
 #### Updating Attributes
@@ -877,8 +888,11 @@ Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
 {
-  "title": "To TDD or Not",
-  "text": "TLDR; It's complicated... but check your test coverage regardless."
+  "articles": {
+    "id": "1",
+    "title": "To TDD or Not",
+    "text": "TLDR; It's complicated... but check your test coverage regardless."
+  }
 }
 ```
 
@@ -896,9 +910,11 @@ Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
 {
-  "title": "Rails is a Melting Pot",
-  "links": {
-    "author": "1"
+  "articles": {
+    "title": "Rails is a Melting Pot",
+    "links": {
+      "author": "1"
+    }
   }
 }
 ```
@@ -915,7 +931,7 @@ Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
 {
-  "author": "12"
+  "people": "12"
 }
 ```
 
@@ -939,9 +955,12 @@ Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 
 {
-  "title": "Rails is a Melting Pot",
-  "links": {
-    "tags": ["2", "3"]
+  "articles": {
+    "id": "1",
+    "title": "Rails is a Melting Pot",
+    "links": {
+      "tags": ["2", "3"]
+    }
   }
 }
 ```
@@ -1109,7 +1128,7 @@ Content-Type: application/vnd.api+json
   "links": {
     "comments": "http://example.com/comments/{comments}"
   },
-  "data": [{
+  "photos": {
     "id": "1",
     "href": "http://example.com/photos/1",
     "title": "Hamster",
@@ -1117,7 +1136,7 @@ Content-Type: application/vnd.api+json
     "links": {
       "comments": [ "1", "5", "12", "17" ]
     }
-  }]
+  }
 }
 ```
 
