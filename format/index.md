@@ -7,11 +7,13 @@ title: "Format"
 
 ## Introduction <a href="#introduction" id="introduction" class="headerlink">¶</a>
 
-JSON API is a media type ([`application/vnd.api+json`](http://www.iana.org/assignments/media-types/application/vnd.api+json)) that specifies how a client should request that resources be fetched or modified and how a server should respond to those requests. JavaScript Object Notation (JSON) [[RFC4627](http://tools.ietf.org/html/rfc4627)] is used for the exchange of data.
+JSON API specifies how a client should request that resources be fetched or modified and how a server should respond to those requests. JavaScript Object Notation (JSON) [[RFC4627](http://tools.ietf.org/html/rfc4627)] is used for the exchange of data.
 
 JSON API is designed to minimize both the number of requests and the amount of data transmitted between clients and servers. Many of the optional features in JSON API are aimed at furthering this goal.
 
-A JSON API server supports fetching of resources through the HTTP method GET. In order to support creating, updating and deleting resources, it must support use of the HTTP methods POST, PUT and DELETE, respectively. 
+A JSON API server supports fetching of resources through the HTTP method GET. The [`application/vnd.api+json`](http://www.iana.org/assignments/media-types/application/vnd.api+json) media type, which allows for the linking and inclusion of related documents, is used for responses.
+
+In order to support creating, updating and deleting resources, a JSON API server must support use of the HTTP methods POST, PUT and DELETE, respectively. The media type [`application/json`](http://www.iana.org/assignments/media-types/application/json) is used for requests.
 
 A JSON API server may also optionally support modification of resources with the HTTP PATCH method [[RFC5789](http://tools.ietf.org/html/rfc5789)] and the JSON Patch format [[RFC6902](http://tools.ietf.org/html/rfc6902)]. JSON Patch support is possible because, conceptually, JSON API represents all of a domain's resources as a single JSON document that can act as the target for operations. Resources are grouped at the top level of this document according to their type. Each resource can be identified at a unique path within this document.
 
@@ -706,7 +708,7 @@ A server **MAY** allow resources that can be fetched to also be created, modifie
 
 A server **MAY** allow multiple resources to be updated in a single request, as discussed below. Updates to multiple resources **MUST** completely succeed or fail. No partial updates are allowed.
 
-Any requests that contain content **MUST** include a `Content-Type` header whose value is `application/vnd.api+json`.
+Any requests that contain content **MUST** include a `Content-Type` header whose value is `application/json`.
 
 ### Creating Resources <a href="#updating-creating-resources" id="updating-creating-resources" class="headerlink">¶</a>
 
@@ -723,7 +725,7 @@ For instance, a new photo might be created with the following request:
 
 ```text
 POST /photos
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 {
@@ -740,7 +742,7 @@ For instance, multiple photos might be created with the following request:
 
 ```text
 POST /photos
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 [{
@@ -763,7 +765,7 @@ include a `meta` section in all of its responses with the key
 GET /photos
 
 HTTP/1.1 200 OK
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 
 {
   "photos": [{
@@ -784,7 +786,7 @@ string.
 
 ```text
 POST /photos
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 {
@@ -806,7 +808,7 @@ The response **SHOULD** also include a document that contains the primary resour
 ```text
 HTTP/1.1 201 Created
 Location: http://example.com/photos/550e8400-e29b-41d4-a716-446655440000
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 
 {
   "photos": [{
@@ -837,7 +839,7 @@ For example:
 
 ```text
 PUT /articles/1
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 {
@@ -853,7 +855,7 @@ For example:
 
 ```text
 PUT /articles/1,2
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 [{
@@ -873,7 +875,7 @@ For example, the following `PUT` request will only update the `title` and `text`
 
 ```text
 PUT /articles/1
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 {
@@ -892,7 +894,7 @@ For instance, the following `PUT` request will update the `title` and `author` o
 
 ```text
 PUT /articles/1
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 {
@@ -911,7 +913,7 @@ A to-one relationship **MAY** be added by sending a `POST` request to the URL of
 
 ```text
 POST /articles/1/links/author
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 {
@@ -935,7 +937,7 @@ the `tags` for an article:
 
 ```text
 PUT /articles/1
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 {
@@ -959,7 +961,7 @@ A to-many relationship **MAY** be added by sending a `POST` request to the URL o
 
 ```text
 POST /articles/1/links/comments
-Content-Type: application/vnd.api+json
+Content-Type: application/json
 Accept: application/vnd.api+json
 
 {
