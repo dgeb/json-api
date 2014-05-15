@@ -711,7 +711,7 @@ represents a collection of resources to which the new resource should belong.
 
 #### Creating an Individual Resource
 
-To create an individual resource, a resource object **MUST** be sent as the primary resource object.
+A request to create an individual resource **MUST** include a single primary resource object.
 
 For instance, a new photo might be created with the following request:
 
@@ -730,7 +730,7 @@ Accept: application/vnd.api+json
 
 #### Creating Multiple Resources
 
-To create multiple resources, an array of resource objects **MUST** be sent as the primary resource collection.
+A request to create multiple resources **MUST** include a collection of primary resource objects.
 
 For instance, multiple photos might be created with the following request:
 
@@ -831,7 +831,7 @@ Resources can be updated by making a `PUT` request to the URL that represents ei
 
 #### Updating an Individual Resource
 
-To update an individual resource, send a `PUT` request to the URL that represents the resource. The request **MUST** include a single resource document.
+To update an individual resource, send a `PUT` request to the URL that represents the resource. The request **MUST** include a single top-level resource object.
 
 For example:
 
@@ -850,7 +850,7 @@ Accept: application/vnd.api+json
 
 #### Updating Multiple Resources
 
-To update multiple resources, send a `PUT` request to the URL that represents the multiple individual resources (NOT the entire collection of resources). The request **MUST** include a collection of resource documents that each contain an `"id"`.
+To update multiple resources, send a `PUT` request to the URL that represents the multiple individual resources (NOT the entire collection of resources). The request **MUST** include a top-level collection of resource objects that each contain an `"id"`.
 
 For example:
 
@@ -872,7 +872,7 @@ Accept: application/vnd.api+json
 
 #### Updating Attributes
 
-To update one or more attributes of a resource, the primary document should include only the attributes to be updated. Attributes ommitted from the document should not be updated.
+To update one or more attributes of a resource, the primary resource object should include only the attributes to be updated. Attributes ommitted from the resource object should not be updated.
 
 For example, the following `PUT` request will only update the `title` and `text` properties of an article:
 
@@ -894,7 +894,7 @@ Accept: application/vnd.api+json
 
 ##### Updating To-One Relationships
 
-To-one relationships **MAY** be updated along with other attributes by including them in a `links` object within the document in a `PUT` request.
+To-one relationships **MAY** be updated along with other attributes by including them in a `links` object within the resource object in a `PUT` request.
 
 For instance, the following `PUT` request will update the `title` and `author` of an article:
 
