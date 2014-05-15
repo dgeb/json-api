@@ -20,12 +20,12 @@ Here's an example response from JSON API:
 ```javascript
 {
   "links": {
-    "author": {
-      "href": "http://example.com/people/{author}",
+    "posts.author": {
+      "href": "http://example.com/people/{posts.author}",
       "type": "people"
     },
-    "comments": {
-      "href": "http://example.com/comments/{comments}",
+    "posts.comments": {
+      "href": "http://example.com/comments/{posts.comments}",
       "type": "comments"
     }
   },

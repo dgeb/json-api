@@ -7,9 +7,9 @@ title: "Format"
 
 ## Introduction <a href="#introduction" id="introduction" class="headerlink">¶</a>
 
-JSON API is a media type ([`application/vnd.api+json`](http://www.iana.org/assignments/media-types/application/vnd.api+json)) that specifies how a client should request that resources be fetched or modified and how a server should respond to those requests. JavaScript Object Notation (JSON) [[RFC4627](http://tools.ietf.org/html/rfc4627)] is used for the exchange of data.
+JSON API is a specification for how a client should request that resources be fetched or modified and how a server should respond to those requests. JSON API is designed to minimize both the number of requests and the amount of data transmitted between clients and servers.
 
-JSON API is designed to minimize both the number of requests and the amount of data transmitted between clients and servers. Many of the optional features in JSON API are aimed at furthering this goal.
+JSON API requires use of the JSON API media type ([`application/vnd.api+json`](http://www.iana.org/assignments/media-types/application/vnd.api+json)) for exchanging data.
 
 A JSON API server supports fetching of resources through the HTTP method GET. In order to support creating, updating and deleting resources, it must support use of the HTTP methods POST, PUT and DELETE, respectively. 
 
@@ -21,9 +21,17 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 ## Document Structure <a href="#document-structure" id="document-structure" class="headerlink">¶</a>
 
-The top level of a JSON API document **SHOULD** contain a representation of the primary resource(s). The primary resource, or collection of resources, **SHOULD** be keyed either by the resource type or the generic key `"data"`.
+This section describes the structure of a JSON API document, which is identified by the media type [`application/vnd.api+json`](http://www.iana.org/assignments/media-types/application/vnd.api+json). JSON API documents are defined in JavaScript Object Notation (JSON) [[RFC4627](http://tools.ietf.org/html/rfc4627)].
 
-The top level of a document **MAY** also have the following keys:
+Although the same media type is used for both request and response documents, certain aspects are only applicable to one or the other. These differences will be called out below.
+
+### Top Level
+
+A JSON object **MUST** be at the root of every JSON API document. This object defines a document's "top level".
+
+A document's top level **SHOULD** contain a representation of the primary resource, or collection of resources, keyed either by the resource type or the generic key `"data"`.
+
+A document's top level **MAY** also have the following keys, all of which are applicable in response documents only:
 
 * `"meta"`: meta-information about a resource, such as pagination.
 * `"links"`: URL templates to be used for expanding resources' relationships
@@ -31,7 +39,7 @@ The top level of a document **MAY** also have the following keys:
 * `"linked"`: a collection of resource objects, grouped by type, that are linked to
   the primary resource(s) and/or each other.
 
-No other keys should be present at the top level of the document.
+No other keys should be present at the top level of a document.
 
 ### Resource Representations
 
@@ -39,7 +47,7 @@ This section describes how resources are described throughout a JSON API documen
 
 #### Singular Resources
 
-A singular resource **SHOULD** be represented as a single "resource object" (described below) or string value.
+A singular resource **SHOULD** be represented as a single "resource object" (described below) or a string value containing its ID (also described below).
 
 The following post is represented as a resource object:
 
@@ -62,7 +70,7 @@ This post is represented simply by its ID:
 
 #### Plural Resources
 
-A collection of resources **SHOULD** be represented as an array of resource objects or string values, or as a "collection object" (described below).
+A collection of resources **SHOULD** be represented as an array of resource objects or IDs, or as a single "collection object" (described below).
 
 The following posts are represented as an array of resource objects:
 
@@ -100,7 +108,7 @@ These comments are represented by a single "collection" object:
 
 #### Variable Type Resources
 
-Variable type (i.e. "heterogenous") resources can not be keyed by type, but the type **MUST** still be specified in an alternative manner.
+Variable type (i.e. "heterogenous") resources can not be keyed by type, so the type of each resource **MUST** be specified in an alternative manner.
 
 Primary heterogenous resources **MUST** be keyed by `"data"` at the top level of a document.
 
@@ -120,7 +128,7 @@ When variable type resources are represented as objects, the `"type"` key must b
 }
 ```
 
-Variable type resources **MAY** be represented as string values that include both the type and id in the format `"type:id"`:
+Variable type resources **MAY** be represented as string values that include both the type and ID in the format `"type:id"`:
 
 ```javascript
 {
@@ -132,7 +140,7 @@ Variable type resources **MAY** be represented as string values that include bot
 
 Resource objects have the same internal structure, regardless of whether they represent primary or linked resources.
 
-Here's how a "post" resource might appear in a document:
+Here's how a post (i.e. a resource of type "posts") might appear in a document:
 
 ```javascript
 {
@@ -143,7 +151,7 @@ Here's how a "post" resource might appear in a document:
 }
 ```
 
-In the example above, the resource object is simply:
+In the example above, the post's resource object is simply:
 
 ```javascript
 //...
@@ -154,7 +162,7 @@ In the example above, the resource object is simply:
 //...
 ```
 
-This section will focus exclusively on resource objects, outside of the context of the full JSON API document.
+This section will focus exclusively on resource objects, outside of the context of a full JSON API document.
 
 #### Resource Attributes <a href="#resource-object-attributes" id="resource-object-attributes" class="headerlink">¶</a>
 
@@ -172,27 +180,20 @@ be any JSON value.
 
 Each resource object **SHOULD** contain an `"id"` key.
 
-The `"id"` key in a document represents a unique identifier for the underlying
+The `"id"` key in a resource object represents a unique identifier for the underlying
 resource, scoped to its type. It **MUST** be a string which **SHOULD** only
 contain alphanumeric characters, dashes and underscores. It can be used with URL
 templates to fetch related resources, as described below.
 
 In scenarios where uniquely identifying information between client and server
-is unnecessary (e.g., read-only, transient entities), JSON API allows for
+is unnecessary (e.g. read-only, transient entities), JSON API allows for
 omitting the `"id"` key.
-
-NOTE: While an implementation could use the values of `"id"` keys as URLs
-(which are unique string identifiers, after all), it is not generally
-recommended. URLs can change, so they are unreliable for mapping a document to
-any client-side models that represent the same resource. It is recommended that
-URL values be left to the task of linking documents while `"id"` values remain
-opaque to solely provide a unique identity within some type.
 
 #### Resource Types
 
-The type of each resource object can usually be determined from the context in which it is contained. As discussed above, resource objects are typically keyed by their type in a document. 
+The type of each resource object can usually be determined from the context in which it is contained. As discussed above, resource objects are typically keyed by their type in a document.
 
-Each resource document **MAY** contain a `"type"` key to explicitly designate its type. 
+Each resource object **MAY** contain a `"type"` key to explicitly designate its type. 
 
 The `"type"` key is **REQUIRED** when the type of a resource is not otherwise specified in a document.
 
@@ -214,7 +215,7 @@ For example, here's an array of resource objects that might be part of a has-man
 
 #### Resource URLs
 
-The URL of each resource in **MAY** be specified with the `"href"` key. These URLs **SHOULD** only be specified by the server, and therefore are typically only included in request documents.
+The URL of each resource in **MAY** be specified with the `"href"` key. These URLs **SHOULD** only be specified by the server, and therefore are typically only included in response documents.
 
 ```javascript
 //...
@@ -255,9 +256,9 @@ For example, the following post is associated with a single `author` and a colle
 
 ##### To-One Relationships
 
-To-one relationships **MUST** be represented as singular resources with one of the valid formats described above.
+To-one relationships **MUST** be represented with one of the formats for singular resources described above.
 
-For example, the following post is associated with a single author:
+For example, the following post is associated with a single author, identified by ID:
 
 ```javascript
 //...
@@ -291,7 +292,7 @@ And here's an example of a linked author represented as a resource object:
 
 ##### To-Many Relationships
 
-To-many relationships **MUST** be represented as plural resources with one of the valid formats described above.
+To-many relationships **MUST** be represented with one of the formats for plural resources described above.
 
 For example, the following post is associated with several comments:
 
@@ -330,8 +331,8 @@ And here's an example of an array of comments linked as a collection object:
 A "collection object" contains one or more of the attributes: 
 
 * `"ids"` - an array of IDs for the referenced resources.
-* `"type"` - the resource **type**.
-* `"href"` - the URL of the referenced resources (only applicable to response documents). 
+* `"type"` - the resource type.
+* `"href"` - the URL of the referenced resources (applicable to response documents). 
 
 A server that provides a collection object that contains an `"href"` **MUST** respond to a `GET` request to the specified URL with a response that includes the referenced objects as a collection of resource objects.
 
@@ -376,7 +377,7 @@ will fetch the comments for `"The Parley Letter"`.
 }
 ```
 
-In this example, the `comments` variable is expanded by
+In this example, the `posts.comments` variable is expanded by
 "exploding" the array specified in the `"links"` section of each post.
 The URL template specification [[RFC6570](https://tools.ietf.org/html/rfc6570)]
 specifies that the default explosion is to percent encode the array members 
@@ -389,9 +390,9 @@ The top-level `"links"` object has the following behavior:
 * Each key is a dot-separated path that points at a repeated relationship. Paths start
   with a particular resource type and can traverse related resources. 
   For example `"posts.comments"` points at the `"comments"` relationship in each 
-  document of type `"posts"`.
+  resource of type `"posts"`.
 * The value of each key is interpreted as a URL template.
-* For each document that the path points to, act as if it specified a
+* For each resource that the path points to, act as if it specified a
   relationship formed by expanding the URL template with the non-URL value
   actually specified.
 
@@ -430,7 +431,7 @@ In this example, the URL for the author of all three posts is
 Top-level URL templates allow you to specify relationships as IDs, but without
 requiring that clients hard-code information about how to form the URLs.
 
-NOTE: In case of conflict, an individual document's `links` object will take
+NOTE: In case of conflict, an individual resource object's `links` object will take
 precedence over a top-level `links` object.
 
 ### Compound Documents
