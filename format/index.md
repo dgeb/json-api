@@ -294,7 +294,7 @@ And here's an example of a linked author represented as a resource object:
 
 To-many relationships **MUST** be represented with one of the formats for plural resources described above.
 
-For example, the following post is associated with several comments:
+For example, the following post is associated with several comments, identified by their IDs:
 
 ```javascript
 //...
@@ -436,12 +436,12 @@ precedence over a top-level `links` object.
 
 ### Compound Documents
 
-To save HTTP requests, responses may optionally allow for the inclusion of linked documents along with the requested primary documents. Such response documents are called "compound documents".
+To save HTTP requests, responses may optionally allow for the inclusion of linked resources along with the requested primary resources. Such response documents are called "compound documents".
 
-In a compound document, linked documents **MUST** be included in a top level `"linked"` object, in which they are grouped together in arrays according to their type.
+In a compound document, linked resources **MUST** be included as resource objects in a top level `"linked"` object, in which they are grouped together in arrays according to their type.
 
-The type of each relationship **MAY** be specified in the `"links"` object with
-the `"type"` key. This facilitates lookups of linked documents by the client.
+The type of each relationship **MAY** be specified in a resource-level or top-level `"links"` object with
+the `"type"` key. This facilitates lookups of linked resource objects by the client.
 
 ```javascript
 {
@@ -514,7 +514,7 @@ it should not be duplicated within the `"linked"` object.
 
 The URL for a collection of resources **SHOULD** be formed from the resource type.
 
-For example, a collection of photos will have the URL:
+For example, a collection of resources of type "photos" will have the URL:
 
 ```text
 /photos
@@ -522,7 +522,7 @@ For example, a collection of photos will have the URL:
 
 The URL for an individual resource **SHOULD** be formed by appending the resource's ID to the collection URL.
 
-For example, a photo with an `id` of `1` will have the URL:
+For example, a photo with an ID of `"1"` will have the URL:
 
 ```text
 /photos/1
@@ -530,7 +530,7 @@ For example, a photo with an `id` of `1` will have the URL:
 
 The URL for multiple individual resources **SHOULD** be formed by appending a comma-separated list of resource IDs to the collection URL.
 
-For example, the photos with `id`s of `1` or `2` or `3` will collectively have the URL:
+For example, the photos with IDs of `"1"`, `"2"` and `"3"` will collectively have the URL:
 
 ```text
 /photos/1,2,3
@@ -556,11 +556,7 @@ A photo's reference to an individual linked photographer will have the URL:
 /photos/1/links/photographer
 ```
 
-Note that these URLs represent the **relationship** and not the linked resource. 
-
-A server **MUST** represent "to-one" relationships as singular resources.
-
-"To-many" relationships **MUST** be represented as plural resources.
+A server **MUST** represent "to-one" relationships as singular resources and "to-many" relationships as plural resources.
 
 
 ## Fetching Resources <a href="#fetching" id="fetching" class="headerlink">¶</a>
@@ -589,19 +585,19 @@ GET /comments?posts=1&author=12
 
 This specification only supports filtering based upon strict matching. Additional filtering allowed by an API should be specified in its profile (see [Extending](/extending)).
 
-### Inclusion of Linked Documents <a href="#fetching-inclusion-of-linked-documents" id="fetching-inclusion-of-linked-documents" class="headerlink">¶</a>
+### Inclusion of Linked Resources
 
 A server **MAY** choose to support returning compound documents that include
-both primary and linked documents.
+both primary and linked resource objects.
 
-An endpoint **MAY** return documents linked to the primary document(s) by
+An endpoint **MAY** return resources linked to the primary resource(s) by
 default.
 
-An endpoint **MAY** also support custom inclusion of linked documents based
+An endpoint **MAY** also support custom inclusion of linked resources based
 upon an `include` request parameter. This parameter should specify the path to
-one or more documents relative to the primary document. If this parameter is
-used, **ONLY** the requested linked documents should be returned alongside the
-primary document(s).
+one or more resources relative to the primary resource. If this parameter is
+used, **ONLY** the requested linked resources should be returned alongside the
+primary resource(s).
 
 For instance, comments could be requested with a post:
 
@@ -609,8 +605,8 @@ For instance, comments could be requested with a post:
 GET /posts/1?include=comments
 ```
 
-In order to request documents linked to other documents, the dot-separated path
-of each document should be specified:
+In order to request resources linked to other resources, the dot-separated path
+of each relationship should be specified:
 
 ```text
 GET /posts/1?include=comments.author
@@ -620,7 +616,7 @@ Note: a request for `comments.author` should not automatically also include
 `comments` in the response (although comments will obviously need to be
 queried in order to fulfill the request for their authors).
 
-Multiple linked documents could be requested in a comma-separated list:
+Multiple linked resources could be requested in a comma-separated list:
 
 ```text
 GET /posts/1?include=author,comments,comments.author
@@ -631,33 +627,33 @@ GET /posts/1?include=author,comments,comments.author
 A server **MAY** choose to support requests to return only specific fields in 
 resource documents.
 
-An endpoint **MAY** support requests that specify fields for the primary document
+An endpoint **MAY** support requests that specify fields for the primary resource
 type with a `fields` parameter.
 
 ```text
 GET /people?fields=id,name,age
 ```
 
-An endpoint **MAY** support requests that specify fields for any document type
-with a `fields[DOCUMENT_TYPE]` parameter.
+An endpoint **MAY** support requests that specify fields for any resource type
+with a `fields[TYPE]` parameter.
 
 ```text
 GET /posts?include=author&fields[posts]=id,title&fields[people]=id,name
 ```
 
-An endpoint SHOULD return a default set of fields in a document if no fields
+An endpoint SHOULD return a default set of fields in a resource object if no fields
 have been specified for its type, or if the endpoint does not support use of
-either `fields` or `fields[DOCUMENT_TYPE]`.
+either `fields` or `fields[TYPE]`.
 
-Note: `fields` and `fields[DOCUMENT_TYPE]` can not be mixed. If the latter
-format is used, then it must be used for the primary document type as well.
+Note: `fields` and `fields[TYPE]` can not be mixed. If the latter
+format is used, then it must be used for the primary resource type as well.
 
 ### Sorting <a href="#fetching-sorting" id="fetching-sorting" class="headerlink">¶</a>
 
-A server **MAY** choose to support requests to sort documents according to
+A server **MAY** choose to support requests to sort resource collections according to
 one or more criteria.
 
-An endpoint **MAY** support requests to sort the primary document type with a
+An endpoint **MAY** support requests to sort the primary resource type with a
 `sort` parameter.
 
 ```text
@@ -682,22 +678,23 @@ GET /posts?sort=-created,title
 The above example should return the newest posts first. Any posts created on the
 same date will then be sorted by their title in ascending alpabetical order.
 
-An endpoint **MAY** support requests to sort any document type with a
-`sort[DOCUMENT_TYPE]` parameter.
+An endpoint **MAY** support requests to sort any resource type with a
+`sort[TYPE]` parameter.
 
 ```text
 GET /posts?include=author&sort[posts]=-created,title&sort[people]=name
 ```
 
 If no sort order is specified, or if the endpoint does not support use of either
-`sort` or `sort[DOCUMENT_TYPE]`, then the endpoint **SHOULD** return documents
-sorted with a repeatable algorithm. In other words, documents **SHOULD** always
+`sort` or `sort[TYPE]`, then the endpoint **SHOULD** return resource objects
+sorted with a repeatable algorithm. In other words, resources **SHOULD** always
 be returned in the same order, even if the sort criteria aren't specified.
 
-Note: `sort` and `sort[DOCUMENT_TYPE]` can not be mixed. If the latter
-format is used, then it **MUST** be used for the primary document type as well.
+Note: `sort` and `sort[TYPE]` can not be mixed. If the latter
+format is used, then it **MUST** be used for the primary resource type as well.
 
-## Creating, Updating and Deleting Resources <a href="#creating-updating-deleting" id="creating-updating-deleting" class="headerlink">¶</a>
+
+## Creating, Updating and Deleting Resources
 
 A server **MAY** allow resources that can be fetched to also be created, modified and deleted.
 
@@ -705,7 +702,7 @@ A server **MAY** allow multiple resources to be updated in a single request, as 
 
 Any requests that contain content **MUST** include a `Content-Type` header whose value is `application/vnd.api+json`.
 
-### Creating Resources <a href="#updating-creating-resources" id="updating-creating-resources" class="headerlink">¶</a>
+### Creating Resources <a href="#crud-creating-resources" id="crud-creating-resources" class="headerlink">¶</a>
 
 A server that supports creating resources **MUST** support creating individual resources and **MAY** optionally support creating multiple resources in a single request.
 
@@ -714,7 +711,7 @@ represents a collection of resources to which the new resource should belong.
 
 #### Creating an Individual Resource
 
-To create an individual resource, a resource object **MUST** be sent as the primary document.
+To create an individual resource, a resource object **MUST** be sent as the primary resource object.
 
 For instance, a new photo might be created with the following request:
 
@@ -733,7 +730,7 @@ Accept: application/vnd.api+json
 
 #### Creating Multiple Resources
 
-To create multiple resources, an array of resource objects **MUST** be sent as the primary document.
+To create multiple resources, an array of resource objects **MUST** be sent as the primary resource collection.
 
 For instance, multiple photos might be created with the following request:
 
