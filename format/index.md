@@ -11,7 +11,7 @@ JSON API is a specification for how a client should request that resources be fe
 
 JSON API requires use of the JSON API media type ([`application/vnd.api+json`](http://www.iana.org/assignments/media-types/application/vnd.api+json)) for exchanging data.
 
-A JSON API server supports fetching of resources through the HTTP method GET. In order to support creating, updating and deleting resources, it must support use of the HTTP methods POST, PUT and DELETE, respectively. 
+A JSON API server supports fetching of resources through the HTTP method GET. In order to support creating, updating and deleting resources, it must support use of the HTTP methods POST, PUT and DELETE, respectively.
 
 A JSON API server may also optionally support modification of resources with the HTTP PATCH method [[RFC5789](http://tools.ietf.org/html/rfc5789)] and the JSON Patch format [[RFC6902](http://tools.ietf.org/html/rfc6902)]. JSON Patch support is possible because, conceptually, JSON API represents all of a domain's resources as a single JSON document that can act as the target for operations. Resources are grouped at the top level of this document according to their type. Each resource can be identified at a unique path within this document.
 
@@ -23,7 +23,7 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "S
 
 This section describes the structure of a JSON API document, which is identified by the media type [`application/vnd.api+json`](http://www.iana.org/assignments/media-types/application/vnd.api+json). JSON API documents are defined in JavaScript Object Notation (JSON) [[RFC4627](http://tools.ietf.org/html/rfc4627)].
 
-Although the same media type is used for both request and response documents, certain aspects are only applicable to one or the other. These differences will be called out below.
+Although the same media type is used for both request and response documents, certain aspects are only applicable to one or the other. These differences are called out below.
 
 ### Top Level
 
@@ -31,7 +31,7 @@ A JSON object **MUST** be at the root of every JSON API document. This object de
 
 A document's top level **SHOULD** contain a representation of the primary resource, or collection of resources, keyed either by the resource type or the generic key `"data"`.
 
-A document's top level **MAY** also have the following keys, all of which are applicable in response documents only:
+A document's top level **MAY** also have the following keys:
 
 * `"meta"`: meta-information about a resource, such as pagination.
 * `"links"`: URL templates to be used for expanding resources' relationships
@@ -43,9 +43,9 @@ No other keys should be present at the top level of a document.
 
 ### Resource Representations
 
-This section describes how resources are represented throughout a JSON API document. It applies to primary resources, which are present at the top level of a document, as well as linked resources.
+This section describes how resources can be represented throughout a JSON API document. It applies to primary resources, which are present at the top level of a document, as well as linked resources.
 
-#### Singular Resources
+#### Singular Resource Representations
 
 A singular resource **SHOULD** be represented as a single "resource object" (described below) or a string value containing its ID (also described below).
 
@@ -68,7 +68,7 @@ This post is represented simply by its ID:
 }
 ```
 
-#### Plural Resources
+#### Plural Resource Representations
 
 A collection of resources **SHOULD** be represented as an array of resource objects or IDs, or as a single "collection object" (described below).
 
@@ -1060,28 +1060,26 @@ JSON API servers **MAY** opt to support HTTP `PATCH` requests that conform to th
 
 `PATCH` requests **MUST** specify a `Content-Type` header of `application/json-patch+json`.
 
-Each `PATCH` operation is fine grained and updates one resource or attribute.
-
-A server **MAY** support multiple `PATCH` operations by allowing more than one operation in the request document.
+`PATCH` operations **MUST** be sent as an array to conform with the JSON Patch format. A server **MAY** limit the type, order and count of operations allowed in this top level array.
 
 ### Request URLs
 
 The URL for each `PATCH` request **SHOULD** map to the resource(s) or relationship(s) to be updated.
 
-The request URL and the `PATCH` operation's `"path"` are complementary and combine to target a particular resource, collection, attribute, or relationship. Therefore, every `"path"` within a `PATCH` operation should be relative to the request URL.
+Every `"path"` within a `PATCH` operation **SHOULD** be relative to the request URL. The request URL and the `PATCH` operation's `"path"` are complementary and combine to target a particular resource, collection, attribute, or relationship.
 
-`PATCH` operations **MAY** also be allowed at the root URL of an API. In this case, every `"path"` within a `PATCH` operation must include the full resource URL. This allows for general "fire hose" updates to any resource represented by an API.
+`PATCH` operations **MAY** be allowed at the root URL of an API. In this case, every `"path"` within a `PATCH` operation **MUST** include the full resource URL. This allows for general "fire hose" updates to any resource represented by an API. As stated above, a server **MAY** limit the type, order and count of bulk operations.
 
 ### Creating a Resource with PATCH
 
-To create a resource, perform an `"add"` operation with a `"path"` that points to the end of the resource collection (`"/-"`). The `"value"` should contain a document representing the new resource.
+To create a resource, perform an `"add"` operation with a `"path"` that points to the end of its corresponding resource collection (`"/-"`). The `"value"` should contain a resource object.
 
 For instance, a new photo might be created with the following request:
 
 ```text
 PATCH /photos
 Content-Type: application/json-patch+json
-Accept: application/vnd.api+json
+Accept: application/json
 
 [
   { 
@@ -1097,7 +1095,7 @@ Accept: application/vnd.api+json
 
 ### Updating Attributes with PATCH
 
-To update an attribute, perform a `replace` operation with the attribute's name specified as the `"path"`.
+To update an attribute, perform a `"replace"` operation with the attribute's name specified as the `"path"`.
 
 For instance, the following request should update just the `src` property of the photo at `/photos/1`:
 
@@ -1112,31 +1110,33 @@ Content-Type: application/json-patch+json
 
 ### Updating Relationships with PATCH
 
-Relationship updates are represented as `PATCH` operations on the `links` document.
+To update a relationship, send an appropriate `PATCH` operation to the corresponding relationship's URL.
+
+A server **MAY** also support updates at a higher level, such as the resource's URL (or even the API's root URL). As discussed above, the request URL and each operation's `"path"` must be complementary and combine to target a particular relationship's URL.
 
 #### Updating To-One Relationships with PATCH
 
-To update a to-one relationship, perform a `replace` operation with `/links/<name>` specified as the `"path"`. The `"value"` should either be an ID or a "to-one link document" (see above). 
+To update a to-one relationship, perform a `"replace"` operation with a URL and `"path"` that targets the relationship. The `"value"` should be a singular resource representation. 
 
-For instance, the following request should update the `author` of the article at `/articles/1`:
+For instance, the following request should update the `author` of an article:
 
 ```text
-PATCH /article/1
+PATCH /article/1/links/author
 Content-Type: application/json-patch+json
 
 [
-  { "op": "replace", "path": "/links/author", "value": "1" }
+  { "op": "replace", "path": "/", "value": "1" }
 ]
 ```
 
-To remove a to-one relationship, perform a `remove` operation with the same `"path"`. For example:
+To remove a to-one relationship, perform a `remove` operation on the relationship. For example:
 
 ```text
-PATCH /article/1
+PATCH /article/1/links/author
 Content-Type: application/json-patch+json
 
 [
-  { "op": "remove", "path": "/links/author" }
+  { "op": "remove", "path": "/" }
 ]
 ```
 
@@ -1145,7 +1145,7 @@ Content-Type: application/json-patch+json
 While to-many relationships are represented as a JSON array in a `GET`
 response, they are updated as if they were a set.
 
-To add an element to a to-many relationship, perform a `add` operation with `/links/<name>/-` specified as the `"path"`. The `"value"` should either be an array of IDs, a single "to-many link document", or an array of "to-one link documents".
+To add an element to a to-many relationship, perform an `"add"` operation that targets the relationship's URL. Because the operation is targeting the end of a collection, the `"path"` must end with `"/-"`. The `"value"` should be a singular or plural resource representation.
 
 For example, for the following `GET` request:
 
@@ -1173,32 +1173,30 @@ You could move comment 30 to this photo by issuing an `add` operation in
 the `PATCH` request:
 
 ```text
-PATCH /photos/1
+PATCH /photos/1/links/comments
 Content-Type: application/json-patch+json
 
 [
-  { "op": "add", "path": "/links/comments/-", "value": "30" }
+  { "op": "add", "path": "/-", "value": "30" }
 ]
 ```
 
-To remove a to-many relationship, perform a `remove` operation on `links/<name>/<id>`.
+To remove a to-many relationship, perform a `"remove"` operation that targets the relationship's URL. Because the operation is targeting a member of a collection, the `"path"` **MUST** end with `"/<id>"` (or `"/<type>:<id>"` for members of heterogenous collections).
 
-For example, to remove comment 5 from this photo, issue a `remove` operation:
+For example, to remove comment 5 from this photo, issue a `"remove"` operation:
 
 ```text
-PATCH /photos/1
+PATCH /photos/1/links/comments
 Content-Type: application/json-patch+json
 
 [
-  { "op": "remove", "path": "/links/comments/5" }
+  { "op": "remove", "path": "/5" }
 ]
 ```
-
-When removing heterogenous relationships, it is necessary to represent the **type** of the linked resource along with its ID. This **SHOULD** be done by representing the ID as `<type>:<ID>`.
 
 ### Deleting a Resource with PATCH
 
-To deleting a resource, perform an `"remove"` operation with a `"path"` that points to the resource's root (`"/"`).
+To delete a resource, perform an `"remove"` operation with a URL and `"path"` that targets the resource.
 
 For instance, photo 1 might be deleted with the following request:
 
@@ -1227,8 +1225,57 @@ ways than those specified by the `PATCH` request (for example, updating
 the `updatedAt` attribute or a computed `sha`), it **MUST** return a
 `200 OK` response.
 
-The body of the response **MUST** be a valid JSON API response, as if a
-`GET` request was made to the same URL.
+The server **MUST** specify a `Content-Type` header of `application/json`. The body of the response **MUST** contain an array of JSON objects, each of which **MUST** conform to the JSON API media type (`application/vnd.api+json`). Response objects in this array **MUST** be in sequential order and correspond to the operations in the request document.
+
+For instance, a request may create two photos in separate operations:
+
+```text
+PATCH /photos
+Content-Type: application/json-patch+json
+Accept: application/json
+
+[
+  { 
+    "op": "add", 
+    "path": "/-", 
+    "value": {
+      "title": "Ember Hamster",
+      "src": "http://example.com/images/productivity.png"
+    }
+  },
+  { 
+    "op": "add", 
+    "path": "/-", 
+    "value": {
+      "title": "Mustaches on a Stick",
+      "src": "http://example.com/images/mustaches.png"
+    }
+  }
+]
+```
+
+The response would then include corresponding JSON API documents contained within an array:
+
+```text
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+[
+  {
+    "photos": [{
+      "id": "123",
+      "title": "Ember Hamster",
+      "src": "http://example.com/images/productivity.png"
+    }]
+  }, {
+    "photos": [{
+      "id": "124",
+      "title": "Mustaches on a Stick",
+      "src": "http://example.com/images/mustaches.png"
+    }]
+  }
+]
+```
 
 #### Other Responses <a href="#updating-a-document-other-responses" id="updating-a-document-other-responses" class="headerlink">¶</a>
 
@@ -1239,10 +1286,3 @@ Servers **MAY** use other HTTP error codes to represent errors.  Clients
 
 Servers **MAY** use HTTP caching headers (`ETag`, `Last-Modified`) in
 accordance with the semantics described in HTTP 1.1.
-
-## Compound Responses <a href="#compound-responses" id="compound-responses" class="headerlink">¶</a>
-
-Whenever a server returns a `200 OK` response in response to a creation,
-update or deletion, it **MAY** include other documents in the JSON
-document. The semantics of these documents are the same as when
-additional documents are included in response to a `GET`.
