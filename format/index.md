@@ -106,7 +106,7 @@ These comments are represented by a single "collection" object:
 }
 ```
 
-#### Variable Type Resources
+#### Variable Type Resource Representations
 
 Variable type (i.e. "heterogenous") resources can not be keyed by type, so the type of each resource **MUST** be specified in an alternative manner.
 
