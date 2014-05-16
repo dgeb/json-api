@@ -1014,19 +1014,19 @@ Accept: application/vnd.api+json
 To-many relationships **MAY** be deleted individually by sending a `DELETE` request to the URL of the relationship:
 
 ```text
-DELETE /articles/1/links/comments/1
+DELETE /articles/1/links/tags/1
 ```
 
 Multiple to-many relationships **MAY** be deleted by sending a `DELETE` request to the URL of the relationships:
 
 ```text
-DELETE /articles/1/links/comments/1,2
+DELETE /articles/1/links/tags/1,2
 ```
 
-When deleting heterogenous relationships, it is necessary to represent the **type** of the linked resource along with its ID. This **SHOULD** be done by representing the ID as `<type>:<ID>`.
+When deleting to-many heterogenous relationships, it is necessary to represent the type of each resource along with its ID when forming the URL of the relationship. As discussed above, this **SHOULD** be done by appending the resource's type and ID to the collection URL in the format: `<type>:<id>`.
 
 ```text
-DELETE /articles/1/links/things/tags:1
+DELETE /people/1/links/favorites/cats:1
 ```
 
 ## Deleting Resources
