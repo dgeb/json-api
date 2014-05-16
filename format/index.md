@@ -43,7 +43,7 @@ No other keys should be present at the top level of a document.
 
 ### Resource Representations
 
-This section describes how resources are described throughout a JSON API document. It applies to primary resources, represented at the top level of the document, as well as linked resources.
+This section describes how resources are represented throughout a JSON API document. It applies to primary resources, which are present at the top level of a document, as well as linked resources.
 
 #### Singular Resources
 
@@ -625,7 +625,7 @@ GET /posts/1?include=author,comments,comments.author
 ### Sparse Fieldsets <a href="#fetching-sparse-fieldsets" id="fetching-sparse-fieldsets" class="headerlink">¶</a>
 
 A server **MAY** choose to support requests to return only specific fields in 
-resource documents.
+resource object.
 
 An endpoint **MAY** support requests that specify fields for the primary resource
 type with a `fields` parameter.
