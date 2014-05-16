@@ -160,7 +160,7 @@ This section will focus exclusively on resource objects, outside of the context 
 
 #### Resource Attributes <a href="#resource-object-attributes" id="resource-object-attributes" class="headerlink">¶</a>
 
-There are four reserved keys in resource objects:
+There are five reserved keys in resource objects:
 
 * `"id"`
 * `"clientid"`
