@@ -808,7 +808,7 @@ Accept: application/vnd.api+json
 }
 ```
 
-A server **MAY** alternatively allow clients to specify IDs with the `"clientid"` key. The value of the `"clientid"` key **SHOULD** be uniquely scoped the resource type and client.
+A server **MAY** alternatively allow clients to specify IDs with the `"clientid"` key. The value of the `"clientid"` key **SHOULD** be uniquely scoped to the resource type and client.
 
 A server that accepts the `"clientid"` key **MUST** return any created resources with a matching `"clientid"` key in the response.
 
