@@ -176,11 +176,11 @@ be any JSON value.
 Each resource object **SHOULD** contain an ID, which may be represented by an `"id"` key, a `"clientid"` key, or both.
 
 The `"id"` key in a resource object represents a unique identifier for the underlying
-resource, scoped to its type. It **MUST** be a string which **SHOULD** only
+resource, scoped to its type. Its value **MUST** be a string which **SHOULD** only
 contain alphanumeric characters, dashes and underscores. It can be used with URL
 templates to fetch related resources, as described below.
 
-Servers **MAY** optionally support use of a `"clientid"` to correlate a resource on the client with a newly created resource on the server. The `"clientid"` has the same requirements as the `"id"` key, with the exception that its uniqueness is only scoped to a particular client and type. The role of `"clientid"` in creating resources is described below.
+Servers **MAY** optionally support use of a `"clientid"` to correlate a resource on the client with a newly created resource on the server. The `"clientid"` value has the same requirements as the `"id"` value, with the exception that its uniqueness is only scoped to a particular client and resource type. The role of `"clientid"` in creating resources is described below.
 
 In scenarios where uniquely identifying information between client and server
 is unnecessary (e.g. read-only, transient entities), JSON API allows for
