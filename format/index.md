@@ -112,7 +112,7 @@ Variable type (i.e. "heterogenous") resources can not be keyed by type, so the t
 
 Primary heterogenous resources **MUST** be keyed by `"data"` at the top level of a document.
 
-When variable type resources are represented as objects, the `"type"` key must be specified for each resource:
+Variable type resources **MUST** be represented as objects that contain a type and an ID:
 
 ```javascript
 {
@@ -128,13 +128,7 @@ When variable type resources are represented as objects, the `"type"` key must b
 }
 ```
 
-Variable type resources **MAY** be represented as string values that include both the type and ID in the format `"type:id"`:
-
-```javascript
-{
-  "data": ["people:9", "cats:1"]
-}
-```
+Variable type resources **MUST NOT** be represented by string values alone.
 
 ### Resource Objects
 
@@ -536,13 +530,25 @@ For example, the photos with IDs of `"1"`, `"2"` and `"3"` will collectively hav
 /photos/1,2,3
 ```
 
+The URL for individual resources within a heterogenous collection **SHOULD** be formed by appending the resource's type and ID to the collection URL in the format: `<type>:<id>`. For example:
+
+```text
+/favorites/cats:1
+```
+
+The same format **SHOULD** be used to identify multiple individual resources within a heterogenous collection:
+
+```text
+/favorites/cats:1,people:9,dogs:123
+```
+
 ### Alternative URLs
 
 Alternative URLs for resources **MAY** optionally be specified in responses with `"href"` attributes or URL templates.
 
 ### Relationship URLs
 
-A resource's relationship **MAY** be accessible at a URL formed by appending `/links/<relationship-name>` to the resource's URL. This relative path is consistent with the internal structure of a resource document.
+A resource's relationship **MAY** be accessible at a URL formed by appending `/links/<relationship-name>` to the resource's URL. This relative path is consistent with the internal structure of a resource object.
 
 For example, a photo's collection of linked comments will have the URL:
 
