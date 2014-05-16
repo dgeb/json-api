@@ -163,6 +163,7 @@ This section will focus exclusively on resource objects, outside of the context 
 There are four reserved keys in resource objects:
 
 * `"id"`
+* `"clientid"`
 * `"type"`
 * `"href"`
 * `"links"`
@@ -172,16 +173,18 @@ be any JSON value.
 
 #### Resource IDs <a href="#resource-object-ids" id="resource-object-ids" class="headerlink">¶</a>
 
-Each resource object **SHOULD** contain an `"id"` key.
+Each resource object **SHOULD** contain an ID, which may be represented by an `"id"` key, a `"clientid"` key, or both.
 
 The `"id"` key in a resource object represents a unique identifier for the underlying
 resource, scoped to its type. It **MUST** be a string which **SHOULD** only
 contain alphanumeric characters, dashes and underscores. It can be used with URL
 templates to fetch related resources, as described below.
 
+Servers **MAY** optionally support use of a `"clientid"` to correlate a resource on the client with a newly created resource on the server. The `"clientid"` has the same requirements as the `"id"` key, with the exception that its uniqueness is only scoped to a particular client and type. The role of `"clientid"` in creating resources is described below.
+
 In scenarios where uniquely identifying information between client and server
 is unnecessary (e.g. read-only, transient entities), JSON API allows for
-omitting the `"id"` key.
+omitting IDs.
 
 #### Resource Types
 
@@ -756,50 +759,6 @@ Accept: application/vnd.api+json
 }
 ```
 
-#### Client-Side IDs
-
-A server **MAY** require a client to provide IDs generated on the
-client. If a server wants to request client-generated IDs, it **MUST**
-include a `meta` section in all of its responses with the key
-`client-ids` and the value `true`:
-
-```text
-GET /photos
-
-HTTP/1.1 200 OK
-Content-Type: application/vnd.api+json
-
-{
-  "photos": [{
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "title": "Mustaches on a Stick",
-    "src": "http://example.com/images/mustaches.png"
-  }],
-  "meta": {
-    "client-ids": true
-  }
-}
-```
-
-If the server requests client-generated IDs, the client **MUST** include
-an `id` key in its `POST` request, and the value of the `id` key
-**MUST** be a properly generated and formatted *UUID* provided as a JSON
-string.
-
-```text
-POST /photos
-Content-Type: application/vnd.api+json
-Accept: application/vnd.api+json
-
-{
-  "photos": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "title": "Ember Hamster",
-    "src": "http://example.com/images/productivity.png"
-  }
-}
-```
-
 #### Response
 
 A server **MUST** respond to a successful resource creation request
@@ -824,10 +783,76 @@ Content-Type: application/vnd.api+json
 }
 ```
 
-##### Other Responses <a href="#updating-creating-a-document-response-other-responses" id="updating-creating-a-document-response-other-responses" class="headerlink">¶</a>
-
 Servers **MAY** use other HTTP error codes to represent errors.  Clients
 **MUST** interpret those errors in accordance with HTTP semantics.
+
+#### Client-Generated IDs
+
+A server **MAY** accept client-generated IDs along with requests to create one or more resources. IDs **MAY** be specified with either the `"id"` or `"clientid"` key.
+
+A server **MAY** allow clients to specify canonical IDs with the `"id"` key. The value of the `"id"` key **MUST** be a properly generated and formatted *UUID*.
+
+For example:
+
+```text
+POST /photos
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "photos": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "Ember Hamster",
+    "src": "http://example.com/images/productivity.png"
+  }
+}
+```
+
+A server **MAY** alternatively allow clients to specify IDs with the `"clientid"` key. The value of the `"clientid"` key **SHOULD** be uniquely scoped the resource type and client.
+
+A server that accepts the `"clientid"` key **MUST** return any created resources with a matching `"clientid"` key in the response.
+
+For example, the following request creates two people:
+
+```text
+POST /photos
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "photos": [{
+    "clientid": "a",
+    "title": "Ember Hamster",
+    "src": "http://example.com/images/productivity.png"
+  }, {
+    "clientid": "b",
+    "title": "Mustaches on a Stick",
+    "src": "http://example.com/images/mustaches.png"
+  }]
+}
+```
+
+An appropriate response includes server-generated `"id"` values as well as the client-generated `"clientid"` values.
+
+```text
+HTTP/1.1 201 Created
+Location: http://example.com/photos/123,124
+Content-Type: application/vnd.api+json
+
+{
+  "photos": [{
+    "id": "123",
+    "clientid": "a",
+    "title": "Ember Hamster",
+    "src": "http://example.com/images/productivity.png"
+  }, {
+    "id": "124",
+    "clientid": "b",
+    "title": "Mustaches on a Stick",
+    "src": "http://example.com/images/mustaches.png"
+  }]
+}
+```
 
 ### Updating Resources <a href="#updating" id="updating" class="headerlink">¶</a>
 
