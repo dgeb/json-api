@@ -1082,6 +1082,28 @@ Servers **MAY** use other HTTP error codes to represent errors.  Clients
 **MUST** interpret those errors in accordance with HTTP semantics. Error details
 **MAY** also be returned, as discussed below.
 
+## Errors
+
+Error objects are specialized resource objects that **MAY** be returned in a response to provide additional information about problems encountered while performing an operation. Error objects **SHOULD** be returned as a collection keyed by `"errors"` in the top level of a JSON API document, and **SHOULD NOT** be returned with any other top level resources.
+
+An error object **MAY** have the following members:
+
+* `"id"` - A unique identifier for this particular occurrence of the problem.
+* `"href"` - A URI that **MAY** yield further details about this particular occurrence of the problem.
+* `"status"` - The HTTP status code applicable to this problem, expressed as a string value.
+* `"code"` - An application-specific error code, expressed as a string value.
+* `"title"` - A short, human-readable summary of the problem. It **SHOULD NOT** 
+              change from occurrence to occurrence of the problem, except for 
+              purposes of localization.
+* `"detail"` - A human-readable explanation specific to this occurrence of the problem.
+* `"links"` - Associated resources which can be dereferenced from the request document.
+* `"path"` - The relative path to the relevant attribute within the associated resource(s). 
+             Only appropriate for problems that apply to a single resource or type of resource.
+
+Additional members **MAY** be specified within error objects.
+
+Implementors **MAY** choose to use an alternative media type for errors.
+
 ## PATCH Support
 
 JSON API servers **MAY** opt to support HTTP `PATCH` requests that conform to the JSON Patch format [[RFC6902](http://tools.ietf.org/html/rfc6902)]. There are JSON Patch equivalant operations for the operations described above that use `POST`, `PUT` and `DELETE`. From here on, JSON Patch operations sent in a `PATCH` request will be referred to simply as "`PATCH` operations".
@@ -1303,10 +1325,15 @@ Content-Type: application/json
 ]
 ```
 
-#### Other Responses <a href="#updating-a-document-other-responses" id="updating-a-document-other-responses" class="headerlink">¶</a>
+#### Other Responses
 
-Servers **MAY** use other HTTP error codes to represent errors.  Clients
-**MUST** interpret those errors in accordance with HTTP semantics.
+When a server encounters one or more problems while processing a `PATCH` request, it **SHOULD** specify the most appropriate HTTP error code in the response. Clients **MUST** interpret those errors in accordance with HTTP semantics.
+
+A server **MAY** choose to stop processing `PATCH` operations as soon as the first problem is encountered, or it **MAY** continue processing operations and encounter multiple problems. For instance, a server might process multiple attribute updates and then return multiple validation problems in a single response.
+
+When a server encounters multiple problems from a single request, the most generally applicable HTTP error code should be specified in the response. For instance, `400 Bad Request` might be appropriate for multiple 4xx errors or `500 Internal Server Error` might be appropriate for multiple 5xx errors.
+
+A server **MAY** return error objects that correspond to each operation. The server **MUST** specify a `Content-Type` header of `application/json`. The body of the response **MUST** contain an array of JSON objects, each of which **MUST** conform to the JSON API media type (`application/vnd.api+json`). Response objects in this array **MUST** be in sequential order and correspond to the operations in the request document. Each response object **SHOULD** contain only error objects, since no operations can be completed successfully when any errors occur. Error codes for each specific operation **SHOULD** be returned in the `"status"` member of each error object.
 
 ## HTTP Caching <a href="#http-caching" id="http-caching" class="headerlink">¶</a>
 
