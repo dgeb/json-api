@@ -212,7 +212,7 @@ For example, here's an array of resource objects that might be part of a has-man
 
 #### Resource URLs
 
-The URL of each resource in **MAY** be specified with the `"href"` key. These URLs **SHOULD** only be specified by the server, and therefore are typically only included in response documents.
+The URL of each resource object **MAY** be specified with the `"href"` key. These URLs **SHOULD** only be specified by the server, and therefore are typically only included in response documents.
 
 ```javascript
 //...
@@ -759,10 +759,14 @@ Accept: application/vnd.api+json
 }
 ```
 
-#### Response
+#### Responses
+
+##### 201 Created
 
 A server **MUST** respond to a successful resource creation request
-according to [`HTTP semantics`](http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-22#section-6.3)
+according to [`HTTP semantics`](http://tools.ietf.org/html/draft-ietf-httpbis-p2-semantics-22#section-6.3).
+
+When one or more resources has been created, the server **MUST** return a `201 Created` status code.
 
 The response **MUST** include a `Location` header identifying the location of the primary resource created by the request. If more than one resource is created, the `Location` URL must locate all created resources.
 
@@ -783,8 +787,11 @@ Content-Type: application/vnd.api+json
 }
 ```
 
+##### Other Responses
+
 Servers **MAY** use other HTTP error codes to represent errors.  Clients
-**MUST** interpret those errors in accordance with HTTP semantics.
+**MUST** interpret those errors in accordance with HTTP semantics. Error details
+**MAY** also be returned, as discussed below.
 
 #### Client-Generated IDs
 
@@ -1029,6 +1036,26 @@ When deleting to-many heterogenous relationships, it is necessary to represent t
 DELETE /people/1/links/favorites/cats:1
 ```
 
+### Responses
+
+#### 204 No Content
+
+A server **MUST** return a `204 No Content` status code if an update is successful and the client's current attributes remain up to date. This applies to `PUT` requests as well as `POST` and `DELETE` requests that modify links without affecting other attributes of a resource.
+
+#### 200 OK
+
+If a server accepts an update but also changes the resource(s) in other
+ways than those specified by the request (for example, updating
+the `updatedAt` attribute or a computed `sha`), it **MUST** return a
+`200 OK` response as well as a representation of the updated resource(s)
+as if a `GET` request was made to the request URL.
+
+#### Other Responses
+
+Servers **MAY** use other HTTP error codes to represent errors.  Clients
+**MUST** interpret those errors in accordance with HTTP semantics. Error details
+**MAY** also be returned, as discussed below.
+
 ## Deleting Resources
 
 An individual resource can be *deleted* by making a `DELETE` request to the resource's URL:
@@ -1043,16 +1070,17 @@ A server **MAY** optionally allow multiple resources to be *deleted* with a `DEL
 DELETE /photos/1,2,3
 ```
 
-### 204 Responses
+### Responses
 
-If a server returns a `204 No Content` in response to a `DELETE`
-request, it means that the deletion was successful.
+#### 204 No Content
 
-### Other Responses
+A server **MUST** return a `204 No Content` status code if a delete request is successful.
+
+#### Other Responses
 
 Servers **MAY** use other HTTP error codes to represent errors.  Clients
-**MUST** interpret those errors in accordance with HTTP semantics.
-
+**MUST** interpret those errors in accordance with HTTP semantics. Error details
+**MAY** also be returned, as discussed below.
 
 ## PATCH Support
 
@@ -1210,20 +1238,18 @@ Accept: application/vnd.api+json
 ]
 ```
 
-### Responses to PATCH
+### Responses
 
-#### 204 No Content <a href="#updating-a-document-204-no-content" id="updating-a-document-204-no-content" class="headerlink">¶</a>
+#### 204 No Content
 
-If a server returns a `204 No Content` in response to a `PATCH` request,
-it means that the update was successful, and that the client's current
-attributes remain up to date.
+A server **MUST** return a `204 No Content` status code in response to a successful `PATCH` request in which the client's current attributes remain up to date.
 
-#### 200 OK <a href="#updating-a-document-200-ok" id="updating-a-document-200-ok" class="headerlink">¶</a>
+#### 200 OK
 
-If the server accepts the update but also changes the document in other
-ways than those specified by the `PATCH` request (for example, updating
+If a server accepts an update but also changes the resource(s) in other
+ways than those specified by the request (for example, updating
 the `updatedAt` attribute or a computed `sha`), it **MUST** return a
-`200 OK` response.
+`200 OK` response as well as a representation of the updated resources.
 
 The server **MUST** specify a `Content-Type` header of `application/json`. The body of the response **MUST** contain an array of JSON objects, each of which **MUST** conform to the JSON API media type (`application/vnd.api+json`). Response objects in this array **MUST** be in sequential order and correspond to the operations in the request document.
 
