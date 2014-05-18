@@ -29,21 +29,23 @@ Although the same media type is used for both request and response documents, ce
 
 A JSON object **MUST** be at the root of every JSON API document. This object defines a document's "top level".
 
-A document's top level **SHOULD** contain a representation of the primary resource, or collection of resources, keyed either by the resource type or the generic key `"data"`.
+A document's top level **SHOULD** contain a representation of the resource or collection of resources primarily targeted by a request (i.e. the "primary resource(s)").
 
-A document's top level **MAY** also have the following keys:
+The primary resource(s) **SHOULD** be keyed either by their resource type or the generic key `"data"`.
+
+A document's top level **MAY** also have the following members:
 
 * `"meta"`: meta-information about a resource, such as pagination.
 * `"links"`: URL templates to be used for expanding resources' relationships
   URLs.
 * `"linked"`: a collection of resource objects, grouped by type, that are linked to
-  the primary resource(s) and/or each other.
+  the primary resource(s) and/or each other (i.e. "linked resource(s)").
 
-No other keys should be present at the top level of a document.
+No other members should be present at the top level of a document.
 
 ### Resource Representations
 
-This section describes how resources can be represented throughout a JSON API document. It applies to primary resources, which are present at the top level of a document, as well as linked resources.
+This section describes how resources can be represented throughout a JSON API document. It applies to primary as well as linked resources.
 
 #### Singular Resource Representations
 
@@ -212,7 +214,7 @@ For example, here's an array of resource objects that might be part of a has-man
 
 #### Resource URLs
 
-The URL of each resource object **MAY** be specified with the `"href"` key. These URLs **SHOULD** only be specified by the server, and therefore are typically only included in response documents.
+The URL of each resource object **MAY** be specified with the `"href"` key. Resource URLs **SHOULD** only be specified by the server and therefore are typically only included in response documents.
 
 ```javascript
 //...
@@ -325,7 +327,7 @@ And here's an example of an array of comments linked as a collection object:
 
 ### Collection Objects
 
-A "collection object" contains one or more of the attributes: 
+A "collection object" contains one or more of the members: 
 
 * `"ids"` - an array of IDs for the referenced resources.
 * `"type"` - the resource type.
@@ -338,7 +340,7 @@ A server that provides a collection object that contains an `"href"` **MUST** re
 
 A top-level `"links"` object **MAY** be used to specify URL templates that can be used to formulate URLs for resources according to their type.
 
-Example:
+For example:
 
 ```javascript
 {
@@ -359,6 +361,8 @@ In this example, fetching `http://example.com/posts/1/comments` will fetch
 the comments for `"Rails is Omakase"` and fetching `http://example.com/posts/2/comments`
 will fetch the comments for `"The Parley Letter"`.
 
+Here's another example:
+
 ```javascript
 {
   "links": {
@@ -376,7 +380,7 @@ will fetch the comments for `"The Parley Letter"`.
 
 In this example, the `posts.comments` variable is expanded by
 "exploding" the array specified in the `"links"` section of each post.
-The URL template specification [[RFC6570](https://tools.ietf.org/html/rfc6570)]
+The URI template specification [[RFC6570](https://tools.ietf.org/html/rfc6570)]
 specifies that the default explosion is to percent encode the array members 
 (e.g. via `encodeURIComponent()` in JavaScript) and join them by a comma. In 
 this example, fetching `http://example.com/comments/1,2,3,4` will return a list 
@@ -547,7 +551,7 @@ The same format **SHOULD** be used to identify multiple individual resources wit
 
 ### Alternative URLs
 
-Alternative URLs for resources **MAY** optionally be specified in responses with `"href"` attributes or URL templates.
+Alternative URLs for resources **MAY** optionally be specified in responses with `"href"` members or URL templates.
 
 ### Relationship URLs
 
@@ -795,9 +799,9 @@ Servers **MAY** use other HTTP error codes to represent errors.  Clients
 
 #### Client-Generated IDs
 
-A server **MAY** accept client-generated IDs along with requests to create one or more resources. IDs **MAY** be specified with either the `"id"` or `"clientid"` key.
+A server **MAY** accept client-generated IDs along with requests to create one or more resources. IDs **MAY** be specified with either an `"id"` or `"clientid"` member.
 
-A server **MAY** allow clients to specify canonical IDs with the `"id"` key. The value of the `"id"` key **MUST** be a properly generated and formatted *UUID*.
+A server **MAY** allow clients to specify canonical IDs with `"id"`. The value of `"id"` **MUST** be a properly generated and formatted *UUID*.
 
 For example:
 
@@ -815,9 +819,9 @@ Accept: application/vnd.api+json
 }
 ```
 
-A server **MAY** alternatively allow clients to specify IDs with the `"clientid"` key. The value of the `"clientid"` key **SHOULD** be uniquely scoped to the resource type and client.
+A server **MAY** alternatively allow clients to specify IDs with `"clientid"`. The value of `"clientid"` **SHOULD** be uniquely scoped to the resource type and client.
 
-A server that accepts the `"clientid"` key **MUST** return any created resources with a matching `"clientid"` key in the response.
+A server that accepts a `"clientid"` member **MUST** return any created resources with a matching `"clientid"` member in the response.
 
 For example, the following request creates two people:
 
@@ -888,7 +892,7 @@ Accept: application/vnd.api+json
 
 #### Updating Multiple Resources
 
-To update multiple resources, send a `PUT` request to the URL that represents the multiple individual resources (NOT the entire collection of resources). The request **MUST** include a top-level collection of resource objects that each contain an `"id"`.
+To update multiple resources, send a `PUT` request to the URL that represents the multiple individual resources (NOT the entire collection of resources). The request **MUST** include a top-level collection of resource objects that each contain an `"id"` member.
 
 For example:
 
@@ -912,7 +916,7 @@ Accept: application/vnd.api+json
 
 To update one or more attributes of a resource, the primary resource object should include only the attributes to be updated. Attributes ommitted from the resource object should not be updated.
 
-For example, the following `PUT` request will only update the `title` and `text` properties of an article:
+For example, the following `PUT` request will only update the `title` and `text` attributes of an article:
 
 ```text
 PUT /articles/1
@@ -934,7 +938,7 @@ Accept: application/vnd.api+json
 
 To-one relationships **MAY** be updated along with other attributes by including them in a `links` object within the resource object in a `PUT` request.
 
-For instance, the following `PUT` request will update the `title` and `author` of an article:
+For instance, the following `PUT` request will update the `title` and `author` attributes of an article:
 
 ```text
 PUT /articles/1
@@ -1197,7 +1201,7 @@ response, they are updated as if they were a set.
 
 To add an element to a to-many relationship, perform an `"add"` operation that targets the relationship's URL. Because the operation is targeting the end of a collection, the `"path"` must end with `"/-"`. The `"value"` should be a singular or plural resource representation.
 
-For example, for the following `GET` request:
+For example, consider the following `GET` request:
 
 ```text
 GET /photos/1
@@ -1233,7 +1237,7 @@ Content-Type: application/json-patch+json
 
 To remove a to-many relationship, perform a `"remove"` operation that targets the relationship's URL. Because the operation is targeting a member of a collection, the `"path"` **MUST** end with `"/<id>"` (or `"/<type>:<id>"` for members of heterogenous collections).
 
-For example, to remove comment 5 from this photo, issue a `"remove"` operation:
+For example, to remove comment 5 from this photo, issue this `"remove"` operation:
 
 ```text
 PATCH /photos/1/links/comments
@@ -1333,7 +1337,7 @@ A server **MAY** choose to stop processing `PATCH` operations as soon as the fir
 
 When a server encounters multiple problems from a single request, the most generally applicable HTTP error code should be specified in the response. For instance, `400 Bad Request` might be appropriate for multiple 4xx errors or `500 Internal Server Error` might be appropriate for multiple 5xx errors.
 
-A server **MAY** return error objects that correspond to each operation. The server **MUST** specify a `Content-Type` header of `application/json`. The body of the response **MUST** contain an array of JSON objects, each of which **MUST** conform to the JSON API media type (`application/vnd.api+json`). Response objects in this array **MUST** be in sequential order and correspond to the operations in the request document. Each response object **SHOULD** contain only error objects, since no operations can be completed successfully when any errors occur. Error codes for each specific operation **SHOULD** be returned in the `"status"` member of each error object.
+A server **MAY** return error objects that correspond to each operation. The server **MUST** specify a `Content-Type` header of `application/json` and the body of the response **MUST** contain an array of JSON objects, each of which **MUST** conform to the JSON API media type (`application/vnd.api+json`). Response objects in this array **MUST** be in sequential order and correspond to the operations in the request document. Each response object **SHOULD** contain only error objects, since no operations can be completed successfully when any errors occur. Error codes for each specific operation **SHOULD** be returned in the `"status"` member of each error object.
 
 ## HTTP Caching <a href="#http-caching" id="http-caching" class="headerlink">¶</a>
 
