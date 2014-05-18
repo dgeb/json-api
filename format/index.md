@@ -110,11 +110,11 @@ These comments are represented by a single "collection" object:
 
 #### Variable Type Resource Representations
 
-Variable type (i.e. "heterogenous") resources can not be keyed by type, so the type of each resource **MUST** be specified in an alternative manner.
+Variable type (i.e. "heterogenous") resources can not be keyed by type, so the type of each resource **SHOULD** be specified in an alternative manner.
 
-Primary heterogenous resources **MUST** be keyed by `"data"` at the top level of a document.
+Variable type primary resources **SHOULD** be keyed by `"data"` at the top level of a document.
 
-Variable type resources **MUST** be represented as objects that contain a type and an ID:
+Variable type resources **SHOULD** be represented as objects that contain both a type and an ID:
 
 ```javascript
 {
@@ -130,7 +130,7 @@ Variable type resources **MUST** be represented as objects that contain a type a
 }
 ```
 
-Variable type resources **MUST NOT** be represented by string values alone.
+Variable type resources **SHOULD NOT** be represented by string values alone.
 
 ### Resource Objects
 
