@@ -188,7 +188,7 @@ response that includes the resource as the primary data.
 A resource object **MAY** contain references to other resource objects
 ("relationships"). Relationships may be to-one or to-many. Relationships
 can be specified by including a member, keyed by the name of the
-relationship (anything but `"self"`), in a resource's links object.
+relationship, in a resource's links object. This key **SHALL NOT** be named as `"self"`.
 
 The value of a relationship **MUST** be one of the following:
 
