@@ -564,10 +564,8 @@ The primary data in the response document **MUST** be one of the following:
 * an object containing `type` and `id` members for non-empty to-one
   relationships.
 * an empty array (`[]`) for empty to-many relationships
-* an object containing `type` and `ids` members for non-empty homogenous
-  to-many relationships.
-* an array of objects each containing `type` and `id` members for non-empty
-  heterogenous to-many relationships.
+* an object containing `type` and `ids` members for non-empty to-many
+  relationships (homogeneous or heterogeneous).
 
 The top-level *links object* **MAY** contain `self` and `resource` links,
 as described for link objects.
